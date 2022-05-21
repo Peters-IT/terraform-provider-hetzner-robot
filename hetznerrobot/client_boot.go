@@ -73,7 +73,7 @@ func (c *HetznerRobotClient) setBootProfile(serverID int, activeBootProfile stri
 	encodedParams := formParams.Encode()
 	log.Println(encodedParams)
 
-	bytes, err := c.makeAPICall("POST", fmt.Sprintf("%s/boot/%s/%d", c.url, activeBootProfile, serverID), strings.NewReader(encodedParams), http.StatusAccepted)
+	bytes, err := c.makeAPICall("POST", fmt.Sprintf("%s/boot/%d/%s", c.url, serverID, activeBootProfile), strings.NewReader(encodedParams), http.StatusAccepted)
 	if err != nil {
 		return nil, err
 	}
