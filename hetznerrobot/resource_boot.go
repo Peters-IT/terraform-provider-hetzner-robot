@@ -45,6 +45,14 @@ func resourceBoot() *schema.Resource {
 				Optional:    true,
 				Description: "Active Operating System / Distribution",
 			},
+			"authorized_keys": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "One or more SSH key fingerprints",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			// read-only / computed
 			"ipv4_address": {
 				Type:        schema.TypeString,
@@ -98,7 +106,12 @@ func resourceBootCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	arch := d.Get("architecture").(string)
 	os := d.Get("operating_system").(string)
 	lang := d.Get("language").(string)
-	authorizedKeys := d.Get("authorized_keys").([]string)
+	authorizedKeys := make([]string, 0)
+	if input := d.Get("authorized_keys"); input != nil {
+		for _, key := range input.([]interface{}) {
+			authorizedKeys = append(authorizedKeys, key.(string))
+		}
+	}
 
 	bootProfile, err := c.setBootProfile(serverID, activeBootProfile, arch, os, lang, authorizedKeys)
 	if err != nil {
@@ -148,7 +161,12 @@ func resourceBootUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	arch := d.Get("architecture").(string)
 	os := d.Get("operating_system").(string)
 	lang := d.Get("language").(string)
-	authorizedKeys := d.Get("authorized_keys").([]string)
+	authorizedKeys := make([]string, 0)
+	if input := d.Get("authorized_keys"); input != nil {
+		for _, key := range input.([]interface{}) {
+			authorizedKeys = append(authorizedKeys, key.(string))
+		}
+	}
 
 	bootProfile, err := c.setBootProfile(serverID, activeBootProfile, arch, os, lang, authorizedKeys)
 	if err != nil {

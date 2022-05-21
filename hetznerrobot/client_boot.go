@@ -60,7 +60,9 @@ func (c *HetznerRobotClient) getBoot(serverID int) (*BootProfile, error) {
 func (c *HetznerRobotClient) setBootProfile(serverID int, activeBootProfile string, arch string, os string, lang string, authorizedKeys []string) (*BootProfile, error) {
 	formParams := url.Values{}
 	formParams.Set("arch", arch)
-	formParams.Set("authorized_key", authorizedKeys[0])
+	for _, key := range authorizedKeys {
+		formParams.Add("authorized_key", key)
+	}
 	if activeBootProfile == "linux" {
 		formParams.Set("dist", os)
 		formParams.Set("lang", lang)
@@ -71,8 +73,11 @@ func (c *HetznerRobotClient) setBootProfile(serverID int, activeBootProfile stri
 	encodedParams := formParams.Encode()
 	log.Println(encodedParams)
 
-	bytes, err := c.makeAPICall("POST", fmt.Sprintf("%s/boot/%s/%d", c.url, activeBootProfile, serverID), strings.NewReader(encodedParams), http.StatusAccepted)
+	bytes, err := c.makeAPICall("POST", fmt.Sprintf("%s/boot/%d/%s", c.url, serverID, activeBootProfile), strings.NewReader(encodedParams), http.StatusOK)
 	if err != nil {
+		if strings.Contains(err.Error(), "BOOT_ALREADY_ENABLED") {
+			return c.getBoot(serverID)
+		}
 		return nil, err
 	}
 
