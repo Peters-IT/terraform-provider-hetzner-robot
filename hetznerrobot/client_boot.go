@@ -60,7 +60,9 @@ func (c *HetznerRobotClient) getBoot(serverID int) (*BootProfile, error) {
 func (c *HetznerRobotClient) setBootProfile(serverID int, activeBootProfile string, arch string, os string, lang string, authorizedKeys []string) (*BootProfile, error) {
 	formParams := url.Values{}
 	formParams.Set("arch", arch)
-	formParams.Set("authorized_key", authorizedKeys[0])
+	for _, key := range authorizedKeys {
+		formParams.Add("authorized_key", key)
+	}
 	if activeBootProfile == "linux" {
 		formParams.Set("dist", os)
 		formParams.Set("lang", lang)
